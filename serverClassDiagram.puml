@@ -1,0 +1,71 @@
+@startuml
+namespace controller {
+    class Controller << (S,Aquamarine) >> {
+        - logger zerolog.Logger
+
+        + HandleStartTCPServer() 
+
+    }
+}
+
+
+"controller.Controller""uses" o-- "zerolog.Logger"
+
+namespace memdb {
+    class DB << (S,Aquamarine) >> {
+        - logger zerolog.Logger
+
+        + Mutex *sync.RWMutex
+        + Records <font color=blue>map</font>[string]Value
+
+        + List() 
+        + Set(args []string) 
+
+    }
+    class Value << (S,Aquamarine) >> {
+        + Created time.Time
+        + Expiry time.Duration
+        + Data []byte
+
+    }
+}
+
+
+"memdb.DB""uses" o-- "memdb.Value"
+"memdb.DB""uses" o-- "sync.RWMutex"
+"memdb.DB""uses" o-- "zerolog.Logger"
+"memdb.Value""uses" o-- "time.Duration"
+"memdb.Value""uses" o-- "time.Time"
+
+namespace tcp {
+    class Command << (S,Aquamarine) >> {
+        + Value string
+        + Args []string
+        + Conn net.Conn
+
+    }
+    class Server << (S,Aquamarine) >> {
+        - logger zerolog.Logger
+
+        + Addr string
+        + Listener net.Listener
+        + DB memdb.DB
+        + Commands <font color=blue>chan</font> Command
+
+        + Start() 
+        + HandleConnections() 
+        + ReadCommand(conn net.Conn) 
+        + WriteCommand(conn net.Conn, data string) 
+        + HandleCommand() 
+
+    }
+}
+
+
+"tcp.Command""uses" o-- "net.Conn"
+"tcp.Server""uses" o-- "memdb.DB"
+"tcp.Server""uses" o-- "net.Listener"
+"tcp.Server""uses" o-- "tcp.Command"
+"tcp.Server""uses" o-- "zerolog.Logger"
+
+@enduml

@@ -1,4 +1,4 @@
-package server
+package tcp
 
 const (
 	LIST  = "LIST"
