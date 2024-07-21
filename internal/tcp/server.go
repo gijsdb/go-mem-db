@@ -19,35 +19,35 @@ type Command struct {
 
 type Server struct {
 	logger   zerolog.Logger
-	Addr     string
-	Listener net.Listener
+	address  string
+	listener net.Listener
 	DB       memdb.DB
-	Commands chan Command
+	commands chan Command
 }
 
-func NewServer(addr string, db memdb.DB, logger zerolog.Logger) Server {
+func NewServer(address string, db memdb.DB, logger zerolog.Logger) Server {
 	return Server{
 		logger:   logger,
-		Addr:     addr,
+		address:  address,
 		DB:       db,
-		Commands: make(chan Command),
+		commands: make(chan Command),
 	}
 }
 
 func (s *Server) Start() {
-	listener, err := net.Listen("tcp", s.Addr)
+	listener, err := net.Listen("tcp", s.address)
 	if err != nil {
 		panic(err)
 	}
 	defer listener.Close()
-	s.Listener = listener
-	s.logger.Info().Msg("TCP server started")
+	s.listener = listener
+	s.logger.Info().Msg(fmt.Sprintf("TCP server started on %s", s.address))
 	s.HandleConnections()
 }
 
 func (s *Server) HandleConnections() {
 	for {
-		conn, err := s.Listener.Accept()
+		conn, err := s.listener.Accept()
 		if err != nil {
 			s.logger.Fatal().Msg(fmt.Sprintf("tcp server unable to accept connection: %v", err))
 			continue
@@ -62,26 +62,26 @@ func (s *Server) ReadCommand(conn net.Conn) {
 	for {
 		input, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			s.logger.Info().Msg(fmt.Sprintf("unable to read from connection... waiting: %v", err))
+			s.logger.Info().Msg(fmt.Sprintf("no message received on connection... waiting: %v", err))
 			time.Sleep(10 * time.Second)
 		}
 		cmd := strings.Trim(input, "\r\n")
 		args := strings.Split(cmd, " ")
 
-		s.Commands <- Command{
+		s.commands <- Command{
 			Value: args[0], Args: args[1:], Conn: conn,
 		}
 	}
 }
 
 func (s *Server) WriteCommand(conn net.Conn, data string) {
-	if _, err := conn.Write([]byte(data)); err != nil {
+	if _, err := conn.Write([]byte(data + "\n")); err != nil {
 		s.logger.Error().Msg(fmt.Sprintf("TCP server failed to write : %v", err))
 	}
 }
 
 func (s *Server) HandleCommand() {
-	for cmd := range s.Commands {
+	for cmd := range s.commands {
 		switch cmd.Value {
 		case LIST:
 			s.logger.Info().Msg("TCP server received LIST command")
@@ -94,6 +94,9 @@ func (s *Server) HandleCommand() {
 			} else {
 				s.DB.Set(cmd.Args)
 			}
+		default:
+			s.WriteCommand(cmd.Conn, "Error: command does not exist")
 		}
+
 	}
 }

@@ -1,7 +1,15 @@
 @startuml
 namespace controller {
-    class Controller << (S,Aquamarine) >> {
+    class CLIController << (S,Aquamarine) >> {
         - logger zerolog.Logger
+
+        + HandleStartCLI() 
+
+    }
+    class TCPController << (S,Aquamarine) >> {
+        - logger zerolog.Logger
+        - address string
+        - port string
 
         + HandleStartTCPServer() 
 
@@ -9,7 +17,8 @@ namespace controller {
 }
 
 
-"controller.Controller""uses" o-- "zerolog.Logger"
+"controller.CLIController""uses" o-- "zerolog.Logger"
+"controller.TCPController""uses" o-- "zerolog.Logger"
 
 namespace memdb {
     class DB << (S,Aquamarine) >> {
@@ -46,11 +55,11 @@ namespace tcp {
     }
     class Server << (S,Aquamarine) >> {
         - logger zerolog.Logger
+        - address string
+        - listener net.Listener
+        - commands <font color=blue>chan</font> Command
 
-        + Addr string
-        + Listener net.Listener
         + DB memdb.DB
-        + Commands <font color=blue>chan</font> Command
 
         + Start() 
         + HandleConnections() 
