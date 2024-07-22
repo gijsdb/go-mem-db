@@ -1,23 +1,29 @@
 package tcp
 
 import (
+	"testing"
 	"time"
 
 	"github.com/gijsdb/go-mem-db/internal/memdb"
 	"github.com/rs/zerolog"
 )
 
-var test_data = map[string]memdb.Value{
-	"1": {Created: time.Now(), Expiry: time.Hour, Data: []byte("value1")},
-	"2": {Created: time.Now(), Expiry: time.Hour, Data: []byte("value2")},
-}
+func TestListCommandHandler(t *testing.T) {
+	logger := zerolog.New(nil)
+	mockDB := memdb.NewMockDB()
+	mockDB.Records["key1"] = memdb.Value{Data: []byte("value1")}
+	mockDB.Records["key2"] = memdb.Value{Data: []byte("value2")}
 
-func SetUp() *Server {
-	logger := zerolog.Logger{}
-	db := memdb.NewDB(zerolog.Logger{})
-	db.Records = test_data
+	server := NewServer("127.0.0.1:4242", mockDB, logger)
+	go server.HandleCommand()
 
-	s := NewServer("localhost:1111", db, logger)
+	mockConn := NewMockConn("LIST\n")
+	go server.ReadCommand(mockConn)
 
-	return &s
+	time.Sleep(100 * time.Millisecond)
+
+	expectedOutput := "Key: key1, Value: value1\nKey: key2, Value: value2\n\n"
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
 }

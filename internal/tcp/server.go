@@ -16,7 +16,7 @@ type Server struct {
 	commands chan Command
 }
 
-func NewServer(address string, db *memdb.DB, logger zerolog.Logger) Server {
+func NewServer(address string, db memdb.DBI, logger zerolog.Logger) Server {
 	return Server{
 		logger:   logger,
 		address:  address,

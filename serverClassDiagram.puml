@@ -40,6 +40,15 @@ namespace memdb {
         + Del(key string) bool
 
     }
+    class MockDB << (S,Aquamarine) >> {
+        + Records <font color=blue>map</font>[string]Value
+
+        + List() <font color=blue>map</font>[string]Value
+        + Set(key string, value string) Value
+        + Get(key string) ([]byte, bool)
+        + Del(key string) bool
+
+    }
     class Value << (S,Aquamarine) >> {
         + Created time.Time
         + Expiry time.Duration
@@ -49,10 +58,12 @@ namespace memdb {
 }
 
 "memdb.DBI" <|-- "implements""memdb.DB"
+"memdb.DBI" <|-- "implements""memdb.MockDB"
 
 "memdb.DB""uses" o-- "memdb.Value"
 "memdb.DB""uses" o-- "sync.RWMutex"
 "memdb.DB""uses" o-- "zerolog.Logger"
+"memdb.MockDB""uses" o-- "memdb.Value"
 "memdb.Value""uses" o-- "time.Duration"
 "memdb.Value""uses" o-- "time.Time"
 
@@ -77,6 +88,21 @@ namespace tcp {
     }
     class ListCommandHandler << (S,Aquamarine) >> {
         + Handle(cmd Command, s *Server) 
+
+    }
+    class MockConn << (S,Aquamarine) >> {
+        - readBuffer *bytes.Buffer
+        - writeBuffer *bytes.Buffer
+
+        + Read(b []byte) (int, error)
+        + Write(b []byte) (int, error)
+        + Close() error
+        + LocalAddr() net.Addr
+        + RemoteAddr() net.Addr
+        + SetDeadline(t time.Time) error
+        + SetReadDeadline(t time.Time) error
+        + SetWriteDeadline(t time.Time) error
+        + GetWrittenData() string
 
     }
     class Server << (S,Aquamarine) >> {
@@ -106,6 +132,7 @@ namespace tcp {
 "tcp.CommandHandlerI" <|-- "implements""tcp.SetCommandHandler"
 
 "tcp.Command""uses" o-- "net.Conn"
+"tcp.MockConn""uses" o-- "bytes.Buffer"
 "tcp.Server""uses" o-- "memdb.DBI"
 "tcp.Server""uses" o-- "net.Listener"
 "tcp.Server""uses" o-- "tcp.Command"
