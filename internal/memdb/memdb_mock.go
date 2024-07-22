@@ -18,10 +18,10 @@ func (db *MockDB) List() map[string]Value {
 	return data
 }
 
-func (db *MockDB) Set(key string, value string) Value {
+func (db *MockDB) Set(key string, value string, expire time.Duration) Value {
 	val := Value{
 		Created: time.Now(),
-		Expiry:  time.Hour * 1,
+		Expiry:  expire,
 		Data:    []byte(value),
 	}
 	db.Records[key] = val

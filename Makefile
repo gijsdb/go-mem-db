@@ -7,3 +7,6 @@ runcli:
 
 runserver:
 	go run cmd/server/main.go
+
+testcoverage:
+	go test ./... -coverprofile testcoverage.out

@@ -2,7 +2,9 @@ package tcp
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type CommandHandlerI interface {
@@ -13,6 +15,10 @@ type ListCommandHandler struct{}
 
 func (h *ListCommandHandler) Handle(cmd Command, s *Server) {
 	s.logger.Info().Msg("TCP server received LIST command")
+	if len(cmd.Args) != 0 {
+		s.WriteCommand(cmd.Conn, "Error: LIST command does not take arguments")
+		return
+	}
 	records := s.DB.List()
 	var sb strings.Builder
 	for key, value := range records {
@@ -29,11 +35,19 @@ type SetCommandHandler struct{}
 
 func (h *SetCommandHandler) Handle(cmd Command, s *Server) {
 	s.logger.Info().Msg("TCP server received SET command")
-	if len(cmd.Args) != 2 {
-		s.WriteCommand(cmd.Conn, "Error: SET command needs 2 arguments")
+	if len(cmd.Args) != 3 {
+		s.WriteCommand(cmd.Conn, "Error: SET command needs 3 arguments")
 		return
 	}
-	val := s.DB.Set(cmd.Args[0], cmd.Args[1]) // TODO: accept expiry
+
+	// convert expire string into time.duration
+	i, err := strconv.Atoi(cmd.Args[2])
+	if err != nil {
+		s.logger.Fatal().Msg("Failed to convert string to int in SetHandler")
+	}
+	expiry := time.Minute * time.Duration(i)
+
+	val := s.DB.Set(cmd.Args[0], cmd.Args[1], expiry) // TODO: accept expiry
 
 	s.WriteCommand(cmd.Conn, fmt.Sprintf("Set key: %s, value: %s", cmd.Args[0], string(val.Data)))
 }

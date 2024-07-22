@@ -17,14 +17,15 @@ func (db *DB) List() map[string]Value {
 	return data
 }
 
-// SET [key] [value]
-func (db DB) Set(key string, value string) Value {
+// SET [key] [value] [expiry]
+// TODO: Allows setting of multiple key,values
+func (db DB) Set(key string, value string, expire time.Duration) Value {
 	db.Mutex.Lock()
 	defer db.Mutex.Unlock()
 
 	db.Records[key] = Value{
 		Created: time.Now(),
-		Expiry:  time.Hour,
+		Expiry:  expire,
 		Data:    []byte(value),
 	}
 
@@ -33,17 +34,15 @@ func (db DB) Set(key string, value string) Value {
 
 // GET [key]
 func (db *DB) Get(key string) ([]byte, bool) {
-	db.Mutex.RLock()
-	defer db.Mutex.RUnlock()
+	db.Mutex.Lock()
+	defer db.Mutex.Unlock()
 	value, exists := db.Records[key]
 	if !exists {
 		return nil, false
 	}
 	// Check if the key has expired
 	if value.Expiry > 0 && time.Since(value.Created) > value.Expiry {
-		db.Mutex.Lock()
 		delete(db.Records, key)
-		db.Mutex.Unlock()
 		return nil, false
 	}
 	return value.Data, true

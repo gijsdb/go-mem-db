@@ -9,7 +9,7 @@ import (
 
 type DBI interface {
 	List() map[string]Value
-	Set(key string, value string) Value // TODO: add expiry
+	Set(key string, value string, expire time.Duration) Value // TODO: add expiry
 	Get(key string) ([]byte, bool)
 	Del(key string) bool
 	// Expire(key string, duration time.Duration) bool
