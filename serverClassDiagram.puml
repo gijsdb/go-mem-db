@@ -28,14 +28,14 @@ namespace memdb {
         + Records <font color=blue>map</font>[string]Value
 
         + List() <font color=blue>map</font>[string]Value
-        + Set(key string, value string) Value
+        + Set(key string, value string, expire time.Duration) Value
         + Get(key string) ([]byte, bool)
         + Del(key string) bool
 
     }
     interface DBI  {
         + List() <font color=blue>map</font>[string]Value
-        + Set(key string, value string) Value
+        + Set(key string, value string, expire time.Duration) Value
         + Get(key string) ([]byte, bool)
         + Del(key string) bool
 
@@ -44,7 +44,7 @@ namespace memdb {
         + Records <font color=blue>map</font>[string]Value
 
         + List() <font color=blue>map</font>[string]Value
-        + Set(key string, value string) Value
+        + Set(key string, value string, expire time.Duration) Value
         + Get(key string) ([]byte, bool)
         + Del(key string) bool
 
