@@ -7,7 +7,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// Maybe an ID to create multiple in future? Manage with web UI.
+type DBI interface {
+	List() map[string]Value
+	Set(key string, value string) Value // TODO: add expiry
+	Get(key string) ([]byte, bool)
+	Del(key string) bool
+	// Expire(key string, duration time.Duration) bool
+}
+
 type DB struct {
 	logger  zerolog.Logger
 	Mutex   *sync.RWMutex
@@ -20,9 +27,9 @@ type Value struct {
 	Data    []byte
 }
 
-func NewDB(logger zerolog.Logger) DB {
+func NewDB(logger zerolog.Logger) *DB {
 	logger.Info().Msg("memdb database created")
-	return DB{
+	return &DB{
 		logger:  logger,
 		Mutex:   &sync.RWMutex{},
 		Records: make(map[string]Value),

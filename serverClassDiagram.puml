@@ -27,8 +27,17 @@ namespace memdb {
         + Mutex *sync.RWMutex
         + Records <font color=blue>map</font>[string]Value
 
-        + List() 
-        + Set(args []string) 
+        + List() <font color=blue>map</font>[string]Value
+        + Set(key string, value string) Value
+        + Get(key string) ([]byte, bool)
+        + Del(key string) bool
+
+    }
+    interface DBI  {
+        + List() <font color=blue>map</font>[string]Value
+        + Set(key string, value string) Value
+        + Get(key string) ([]byte, bool)
+        + Del(key string) bool
 
     }
     class Value << (S,Aquamarine) >> {
@@ -39,6 +48,7 @@ namespace memdb {
     }
 }
 
+"memdb.DBI" <|-- "implements""memdb.DB"
 
 "memdb.DB""uses" o-- "memdb.Value"
 "memdb.DB""uses" o-- "sync.RWMutex"
@@ -53,26 +63,50 @@ namespace tcp {
         + Conn net.Conn
 
     }
+    interface CommandHandlerI  {
+        + Handle(cmd Command, s *Server) 
+
+    }
+    class DelCommandHandler << (S,Aquamarine) >> {
+        + Handle(cmd Command, s *Server) 
+
+    }
+    class GetCommandHandler << (S,Aquamarine) >> {
+        + Handle(cmd Command, s *Server) 
+
+    }
+    class ListCommandHandler << (S,Aquamarine) >> {
+        + Handle(cmd Command, s *Server) 
+
+    }
     class Server << (S,Aquamarine) >> {
         - logger zerolog.Logger
         - address string
         - listener net.Listener
         - commands <font color=blue>chan</font> Command
 
-        + DB memdb.DB
+        + DB memdb.DBI
 
-        + Start() 
-        + HandleConnections() 
         + ReadCommand(conn net.Conn) 
         + WriteCommand(conn net.Conn, data string) 
         + HandleCommand() 
+        + Start() 
+        + HandleConnections() 
+
+    }
+    class SetCommandHandler << (S,Aquamarine) >> {
+        + Handle(cmd Command, s *Server) 
 
     }
 }
 
+"tcp.CommandHandlerI" <|-- "implements""tcp.DelCommandHandler"
+"tcp.CommandHandlerI" <|-- "implements""tcp.GetCommandHandler"
+"tcp.CommandHandlerI" <|-- "implements""tcp.ListCommandHandler"
+"tcp.CommandHandlerI" <|-- "implements""tcp.SetCommandHandler"
 
 "tcp.Command""uses" o-- "net.Conn"
-"tcp.Server""uses" o-- "memdb.DB"
+"tcp.Server""uses" o-- "memdb.DBI"
 "tcp.Server""uses" o-- "net.Listener"
 "tcp.Server""uses" o-- "tcp.Command"
 "tcp.Server""uses" o-- "zerolog.Logger"
