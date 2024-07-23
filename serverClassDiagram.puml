@@ -10,15 +10,27 @@ namespace controller {
         - logger zerolog.Logger
         - address string
         - port string
+        - db *memdb.DB
 
         + HandleStartTCPServer() 
+
+    }
+    class WebUIController << (S,Aquamarine) >> {
+        - logger zerolog.Logger
+        - port string
+        - db *memdb.DB
+
+        + HandleStart() 
 
     }
 }
 
 
 "controller.CLIController""uses" o-- "zerolog.Logger"
+"controller.TCPController""uses" o-- "memdb.DB"
 "controller.TCPController""uses" o-- "zerolog.Logger"
+"controller.WebUIController""uses" o-- "memdb.DB"
+"controller.WebUIController""uses" o-- "zerolog.Logger"
 
 namespace memdb {
     class DB << (S,Aquamarine) >> {

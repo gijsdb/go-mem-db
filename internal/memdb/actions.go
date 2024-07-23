@@ -19,7 +19,7 @@ func (db *DB) List() map[string]Value {
 
 // SET [key] [value] [expiry]
 // TODO: Allows setting of multiple key,values
-func (db DB) Set(key string, value string, expire time.Duration) Value {
+func (db *DB) Set(key string, value string, expire time.Duration) Value {
 	db.Mutex.Lock()
 	defer db.Mutex.Unlock()
 
