@@ -5,3 +5,6 @@ web:
   run: true
   port: "4141"
   address: localhost
+ssl: 
+  cert_path: cert.pem
+  key_path: key.pem

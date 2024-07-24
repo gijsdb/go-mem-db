@@ -1,3 +1,5 @@
 todo.txt
 .env
 testcoverage.out
+cert.pem
+key.pem

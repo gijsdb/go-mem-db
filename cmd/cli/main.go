@@ -19,7 +19,8 @@ func main() {
 
 	TCP_ADDRESS := viper.GetString("tcp.address")
 	TCP_PORT := viper.GetString("tcp.port")
+	SSL_CERT_PATH := viper.GetString("ssl.cert_path")
 
-	controller := controller.NewCLIController(logger)
+	controller := controller.NewCLIController(logger, SSL_CERT_PATH)
 	controller.HandleStartCLI(fmt.Sprintf("%s:%s", TCP_ADDRESS, TCP_PORT))
 }

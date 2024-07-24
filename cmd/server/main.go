@@ -18,13 +18,14 @@ func main() {
 
 	TCP_ADDRESS := viper.GetString("tcp.address")
 	TCP_PORT := viper.GetString("tcp.port")
-
 	WEB_UI_PORT := viper.GetString("web.port")
 	RUN_WEB_UI := viper.GetBool("web.run")
+	SSL_CERT_PATH := viper.GetString("ssl.cert_path")
+	SSL_KEY_PATH := viper.GetString("ssl.key_path")
 
 	db := memdb.NewDB(logger)
 
-	tcp_controller := controller.NewTCPController(logger, TCP_ADDRESS, TCP_PORT, db)
+	tcp_controller := controller.NewTCPServerController(logger, TCP_ADDRESS, TCP_PORT, SSL_CERT_PATH, SSL_KEY_PATH, db)
 
 	if RUN_WEB_UI {
 		go tcp_controller.HandleStartTCPServer()

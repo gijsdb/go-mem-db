@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"os"
 	"strings"
 
@@ -13,24 +14,27 @@ import (
 )
 
 type CLIController struct {
-	logger zerolog.Logger
+	logger        zerolog.Logger
+	tls_cert_path string
 }
 
-func NewCLIController(logger zerolog.Logger) CLIController {
+func NewCLIController(logger zerolog.Logger, tls_cert_path string) CLIController {
 	return CLIController{
-		logger: logger,
+		logger:        logger,
+		tls_cert_path: tls_cert_path,
 	}
 }
 
 func (c *CLIController) HandleStartCLI(address string) {
-	conn, err := net.Dial("tcp", address)
+	ssl_config := c.HandleSSLConf()
+
+	conn, err := tls.Dial("tcp", address, ssl_config)
 	if err != nil {
 		fmt.Printf("Failed to connect to server: %v\n", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
 
-	// Create a new readline instance
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "> ",
 		HistoryFile:     "/tmp/readline.tmp",
@@ -44,7 +48,6 @@ func (c *CLIController) HandleStartCLI(address string) {
 	defer rl.Close()
 
 	for {
-		// Read input from the user
 		line, err := rl.Readline()
 		if err == readline.ErrInterrupt {
 			if len(line) == 0 {
@@ -58,55 +61,35 @@ func (c *CLIController) HandleStartCLI(address string) {
 			c.logger.Fatal().Err(err).Msg("Failed to read line")
 		}
 
-		// Trim whitespace and check for exit command
 		line = strings.TrimSpace(line)
 		if line == "exit" {
 			break
 		}
 
-		// Send the command to the TCP server
 		_, err = fmt.Fprintf(conn, "%s\n", line)
 		if err != nil {
 			log.Fatalf("Failed to send command: %v", err)
 		}
 
-		// Read the response from the server
 		response := make([]byte, 4096)
 		n, err := conn.Read(response)
 		if err != nil {
 			log.Fatalf("Failed to read response: %v", err)
 		}
 
-		// Print the server's response
 		fmt.Println(string(response[:n]))
 	}
+}
 
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Println("Connected to server. Type commands:")
+func (c *CLIController) HandleSSLConf() *tls.Config {
+	certPool := x509.NewCertPool()
+	serverCert, err := os.ReadFile(c.tls_cert_path)
+	if err != nil {
+		c.logger.Fatal().Err(err).Msg("Cannot find TLS cert path")
+	}
+	certPool.AppendCertsFromPEM(serverCert)
 
-	// for {
-	// 	fmt.Print("> ")
-	// 	input, _ := reader.ReadString('\n')
-	// 	input = strings.TrimSpace(input)
-	// 	if input == "" {
-	// 		continue
-	// 	}
-	// 	if input == "exit" {
-	// 		break
-	// 	}
-
-	// 	_, err := conn.Write([]byte(input + "\n"))
-	// 	if err != nil {
-	// 		fmt.Printf("Failed to send command: %v\n", err)
-	// 		break
-	// 	}
-
-	// 	response, err := bufio.NewReader(conn).ReadString('\n')
-
-	// 	if err != nil {
-	// 		fmt.Printf("Failed to read response: %v\n", err)
-	// 		break
-	// 	}
-	// 	fmt.Println(strings.TrimSpace(response))
-	// }
+	return &tls.Config{
+		RootCAs: certPool,
+	}
 }

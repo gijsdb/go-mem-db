@@ -2,17 +2,21 @@
 namespace controller {
     class CLIController << (S,Aquamarine) >> {
         - logger zerolog.Logger
+        - tls_cert_path string
 
         + HandleStartCLI(address string) 
+        + HandleSSLConf() *tls.Config
 
     }
-    class TCPController << (S,Aquamarine) >> {
+    class TCPServerController << (S,Aquamarine) >> {
         - logger zerolog.Logger
         - address string
         - port string
+        - tls_conf *tls.Config
         - db *memdb.DB
 
         + HandleStartTCPServer() 
+        + HandleSSLConf(cert_path string, key_path string) *tls.Config
 
     }
     class WebUIController << (S,Aquamarine) >> {
@@ -27,8 +31,9 @@ namespace controller {
 
 
 "controller.CLIController""uses" o-- "zerolog.Logger"
-"controller.TCPController""uses" o-- "memdb.DB"
-"controller.TCPController""uses" o-- "zerolog.Logger"
+"controller.TCPServerController""uses" o-- "memdb.DB"
+"controller.TCPServerController""uses" o-- "tls.Config"
+"controller.TCPServerController""uses" o-- "zerolog.Logger"
 "controller.WebUIController""uses" o-- "memdb.DB"
 "controller.WebUIController""uses" o-- "zerolog.Logger"
 
@@ -128,7 +133,7 @@ namespace tcp {
         + ReadCommand(conn net.Conn) 
         + WriteCommand(conn net.Conn, data string) 
         + HandleCommand() 
-        + Start() 
+        + Start(tls_conf *tls.Config) 
         + HandleConnections() 
 
     }

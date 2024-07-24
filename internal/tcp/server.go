@@ -1,6 +1,7 @@
 package tcp
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 
@@ -25,8 +26,8 @@ func NewServer(address string, db memdb.DBI, logger zerolog.Logger) Server {
 	}
 }
 
-func (s *Server) Start() {
-	listener, err := net.Listen("tcp", s.address)
+func (s *Server) Start(tls_conf *tls.Config) {
+	listener, err := tls.Listen("tcp", s.address, tls_conf)
 	if err != nil {
 		panic(err)
 	}
