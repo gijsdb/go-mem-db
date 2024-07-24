@@ -5,10 +5,10 @@ import (
 )
 
 func InitConfig(config_path string) error {
-	viper.SetConfigName("config")    // Name of the config file (without extension)
-	viper.AddConfigPath(config_path) // Path to look for the config file
+	viper.SetConfigName("config")
+	viper.AddConfigPath(config_path)
 
-	err := viper.ReadInConfig() // Find and read the config file
+	err := viper.ReadInConfig()
 	if err != nil {
 		return err
 	}
