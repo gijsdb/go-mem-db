@@ -2,6 +2,6 @@ tcp:
   port: "4242"
   address: localhost
 web:
-  run: false
+  run: true
   port: "4141"
   address: localhost

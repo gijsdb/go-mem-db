@@ -9,18 +9,22 @@
     >
     <title>MemDB Web Interface</title>
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>
-    <h1>MemDB Web Interface</h1>
-    <div
-        id="content"
-        hx-get="/data"
-        hx-trigger="load, every 5s"
-        hx-target="#content"
-        hx-swap="innerHTML"
-    >
-        <!-- Content will be updated here -->
+    <div class="bg-[#171717] w-screen h-screen text-gray-300 p-5">
+        <h1 class="text-3xl font-bold text-center pb-8">memdb</h1>
+        <div
+            class="bg-gray-800 p-5 rounded-md"
+            id="content"
+            hx-get="/data"
+            hx-trigger="load, every 5s"
+            hx-target="#content"
+            hx-swap="innerHTML"
+        >
+            <!-- Content will be updated here -->
+        </div>
     </div>
 </body>
 
