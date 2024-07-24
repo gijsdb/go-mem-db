@@ -20,13 +20,7 @@ func NewCLIController(logger zerolog.Logger) CLIController {
 	}
 }
 
-func (c *CLIController) HandleStartCLI() {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: cli <address>")
-		os.Exit(1)
-	}
-	address := os.Args[1]
-
+func (c *CLIController) HandleStartCLI(address string) {
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		fmt.Printf("Failed to connect to server: %v\n", err)

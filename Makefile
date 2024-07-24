@@ -3,7 +3,7 @@ plantuml:
 	plantuml serverClassDiagram.puml 
 
 runcli:
-	go run cmd/cli/main.go localhost:4242
+	go run cmd/cli/main.go
 
 runserver:
 	go run cmd/server/main.go

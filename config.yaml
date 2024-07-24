@@ -1,0 +1,7 @@
+tcp:
+  port: "4242"
+  address: localhost
+web:
+  run: false
+  port: "4141"
+  address: localhost
