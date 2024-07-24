@@ -47,8 +47,7 @@ func (s *Server) ReadCommand(conn net.Conn) {
 }
 
 func (s *Server) WriteCommand(conn net.Conn, data string) {
-	// "\n" required for the client to read response properly
-	if _, err := conn.Write([]byte(data + "\n")); err != nil {
+	if _, err := conn.Write([]byte(data)); err != nil {
 		s.logger.Error().Msg(fmt.Sprintf("TCP server failed to write : %v", err))
 		conn.Close()
 	}

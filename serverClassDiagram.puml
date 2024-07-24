@@ -3,7 +3,7 @@ namespace controller {
     class CLIController << (S,Aquamarine) >> {
         - logger zerolog.Logger
 
-        + HandleStartCLI() 
+        + HandleStartCLI(address string) 
 
     }
     class TCPController << (S,Aquamarine) >> {
