@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: test edge cases
-
 var test_data = map[string]Value{
 	"1":       {Created: time.Now(), Expiry: time.Hour, Data: []byte("value1")},
 	"2":       {Created: time.Now(), Expiry: time.Hour, Data: []byte("value2")},
@@ -69,4 +67,12 @@ func Test_Del_Deletes_Value(t *testing.T) {
 
 	assert.True(t, success)
 	assert.NotContains(t, db.Records, test_data["1"])
+}
+
+func Test_Del_Returns_False_If_Val_Not_Found(t *testing.T) {
+	db := Setup()
+
+	success := db.Del("10")
+
+	assert.False(t, success)
 }

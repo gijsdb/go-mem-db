@@ -8,8 +8,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// TODO: test edge cases
-
 func SetUp() Server {
 	logger := zerolog.New(nil)
 	mockDB := memdb.NewMockDB()
@@ -28,7 +26,7 @@ func Test_List_Command_Handler_Lists_Results(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "Key: key1, Value: value1\nKey: key2, Value: value2\n\n"
+	expectedOutput := "Key: key1, Value: value1\nKey: key2, Value: value2\n"
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
@@ -44,7 +42,7 @@ func Test_List_Command_Handler_Errors_With_Args(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "Error: LIST command does not take arguments\n"
+	expectedOutput := "Error: LIST command does not take arguments"
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
@@ -60,13 +58,13 @@ func Test_Set_Command_Handler_Sets_Value(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "Set key: 1, value: value1\n"
+	expectedOutput := "Set key: 1, value: value1"
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
 }
 
-func Test_Set_Command_Handler_Errors_With_Too_Many_Args(t *testing.T) {
+func Test_Set_Command_Handler_Only_Accepts_3_Args(t *testing.T) {
 	server := SetUp()
 
 	go server.HandleCommand()
@@ -76,7 +74,16 @@ func Test_Set_Command_Handler_Errors_With_Too_Many_Args(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "Error: SET command needs 3 arguments\n"
+	expectedOutput := "Error: SET command needs 3 arguments"
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
+
+	mockConn = NewMockConn("SET 1 value1\n")
+	go server.ReadCommand(mockConn)
+
+	time.Sleep(100 * time.Millisecond)
+
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
@@ -92,7 +99,32 @@ func Test_Get_Command_Handler_Gets_Value(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "value1\n"
+	expectedOutput := "value1"
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
+}
+
+func Test_Get_Command_Handler_Only_Accepts_1_Arg(t *testing.T) {
+	server := SetUp()
+
+	go server.HandleCommand()
+	expectedOutput := "Error: GET command needs 1 argument"
+
+	mockConn := NewMockConn("GET key1 key2\n")
+	go server.ReadCommand(mockConn)
+
+	time.Sleep(100 * time.Millisecond)
+
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
+
+	mockConn = NewMockConn("GET\n")
+	go server.ReadCommand(mockConn)
+
+	time.Sleep(100 * time.Millisecond)
+
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
@@ -108,7 +140,32 @@ func Test_Del_Command_Handler_Deletes_Value(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	expectedOutput := "OK\n"
+	expectedOutput := "OK"
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
+}
+
+func Test_Del_Command_Handler_Only_Accepts_1_Arg(t *testing.T) {
+	server := SetUp()
+
+	go server.HandleCommand()
+	expectedOutput := "Error: DEL command needs 1 argument"
+
+	mockConn := NewMockConn("DEL key1 key1\n")
+	go server.ReadCommand(mockConn)
+
+	time.Sleep(100 * time.Millisecond)
+
+	if output := mockConn.GetWrittenData(); output != expectedOutput {
+		t.Errorf("Expected output %q, got %q", expectedOutput, output)
+	}
+
+	mockConn = NewMockConn("DEL\n")
+	go server.ReadCommand(mockConn)
+
+	time.Sleep(100 * time.Millisecond)
+
 	if output := mockConn.GetWrittenData(); output != expectedOutput {
 		t.Errorf("Expected output %q, got %q", expectedOutput, output)
 	}
